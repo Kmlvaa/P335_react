@@ -18,7 +18,7 @@ export default function ProductCard({ id, name, categoryName, getProducts }) {
   } = useDisclosure();
   return (
     <>
-    {isEditOpen && (
+      {isEditOpen && (
         <ProductEditModal
           getProducts={getProducts}
           id={id}
@@ -34,28 +34,28 @@ export default function ProductCard({ id, name, categoryName, getProducts }) {
           onClose={onDeleteClose}
         />
       )}
-    <Card className={styles.card}>
-      <CardBody>
-        <Flex alignItems={"center"} justifyContent={"space-between"}>
-         <Flex flexDirection={'column'}>
-         <Text fontWeight={"bold"}>{name}</Text>
-          <Text fontWeight={"bold"}>Category: {categoryName}</Text>
-         </Flex>
-          <Stack flexDirection={"row"}>
-            <DeleteIcon
-              onClick={onDeleteOpen}
-              _hover={{ cursor: "pointer" }}
-              color={"red"}
-            />
-            <EditIcon
-              onClick={onEditOpen}
-              _hover={{ cursor: "pointer" }}
-              color={"yellow"}
-            />
-          </Stack>
-        </Flex>
-      </CardBody>
-    </Card>
-  </>
+      <Card className={styles.card}>
+        <CardBody>
+          <Flex alignItems={"center"} justifyContent={"space-between"}>
+            <Flex flexDirection={'column'}>
+              <Text fontWeight={"bold"}>{name}</Text>
+              <Text fontWeight={"bold"}>Category: {categoryName}</Text>
+            </Flex>
+            <Stack flexDirection={"row"}>
+              <DeleteIcon
+                onClick={onDeleteOpen}
+                _hover={{ cursor: "pointer" }}
+                color={"red"}
+              />
+              <EditIcon
+                onClick={onEditOpen}
+                _hover={{ cursor: "pointer" }}
+                color={"yellow"}
+              />
+            </Stack>
+          </Flex>
+        </CardBody>
+      </Card>
+    </>
   );
 }

@@ -48,6 +48,7 @@ export default function Product() {
               id={x.id}
               name={x.name}
               categoryName={x.categoryName}
+              getProducts={getProducts}
             />
           );
         })}
