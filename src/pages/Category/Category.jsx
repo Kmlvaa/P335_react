@@ -14,7 +14,7 @@ export default function Category() {
       let resp = await getAllCategories();
       setCategories(resp.data);
     } catch (error) {
-      console.log(error);
+      console.log(error)
       setCategories([]);
     }
   };

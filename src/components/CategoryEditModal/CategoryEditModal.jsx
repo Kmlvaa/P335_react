@@ -15,6 +15,8 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { editCategory } from "../../services/categoryService";
+import { useFormik } from "formik";
+import { categoryEditSchema } from '../../schemas/CategoryEditSchema'
 
 export default function CategoryEditModal({
   id,
@@ -22,32 +24,8 @@ export default function CategoryEditModal({
   onClose,
   getCategories,
 }) {
-  const [input, setInput] = useState("");
   const [category, setCategory] = useState(null);
   const toast = useToast();
-
-  const handleSaveBtnClick = async () => {
-    if (input.length < 3) return;
-    const body = {
-      name: input,
-    };
-
-    try {
-      let resp = await editCategory(id, body)
-      if (resp.status == 200) {
-        toast({
-          title: "Category updated.",
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-        });
-        getCategories();
-        onClose();
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   const getCategory = async () => {
     try {
@@ -64,6 +42,33 @@ export default function CategoryEditModal({
     getCategory();
   }, []);
 
+  const formik = useFormik({
+    initialValues: {
+      name: '',
+    },
+    onSubmit: (values, actions) => {
+      try {
+          editCategory(id, values)
+          toast({
+            title: "Category updated.",
+            status: "success",
+            duration: 3000,
+            isClosable: true,
+          });
+          getCategories();
+          actions.resetForm();
+          
+          setTimeout(() => {
+            onClose();
+          }, 1000)
+
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    validationSchema: categoryEditSchema,
+  })
+
   return (
     <>
       <Modal isOpen={isOpen} onClose={onClose}>
@@ -76,14 +81,18 @@ export default function CategoryEditModal({
               <FormLabel>Category name</FormLabel>
               <Input
                 defaultValue={category?.name}
-                onChange={(e) => setInput(e.target.value.trim())}
                 placeholder="Enter name"
+                name="name"
+                value={formik.values.name}
+                onChange={formik.handleChange}
+                className={formik.errors.name && formik.touched.name ? `${styles.input_error}` : ``}
               />
+              {formik.errors.name && formik.touched.name && <p className={styles.error_msg}>{formik.errors.name}</p>}
             </FormControl>
           </ModalBody>
 
           <ModalFooter>
-            <Button onClick={handleSaveBtnClick} colorScheme="blue" mr={3}>
+            <Button onClick={formik.handleSubmit} colorScheme="blue" mr={3}>
               Save
             </Button>
             <Button onClick={onClose}>Cancel</Button>

@@ -16,6 +16,7 @@ import {
   Heading,
 } from "@chakra-ui/react";
 import { deleteCategory } from "../../services/categoryService";
+import { Formik, useFormik} from 'formik';
 
 export default function CategoryDeleteModal({
   isOpen,
@@ -25,18 +26,30 @@ export default function CategoryDeleteModal({
 }) {
   const toast = useToast();
 
-  const handleDeleteBtnClick = async () => {
-    let resp = await deleteCategory(id);
-    if (resp.status == 200) {
-      toast({
-        title: "Category deleted.",
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      });
-      getCategories();
+  const formik = useFormik({
+    initialValues: {
+      name: '',
+    },
+    onSubmit: ({resetForm}) => {
+      try {
+          deleteCategory(id);
+          toast({
+            title: "Category deleted.",
+            status: "success",
+            duration: 3000,
+            isClosable: true,
+          });
+          getCategories();
+          resetForm();
+          
+          setTimeout(() => {
+            onClose();
+          }, 1000)
+      } catch (error) {
+        console.log(error);
+      }
     }
-  };
+  })
 
   return (
     <>
@@ -50,7 +63,7 @@ export default function CategoryDeleteModal({
           </ModalBody>
 
           <ModalFooter>
-            <Button onClick={handleDeleteBtnClick} colorScheme="red" mr={3}>
+            <Button onClick={formik.handleSubmit} colorScheme="red" mr={3}>
               Yes
             </Button>
             <Button onClick={onClose}>Cancel</Button>

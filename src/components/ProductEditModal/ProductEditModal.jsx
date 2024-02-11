@@ -17,11 +17,12 @@ import {
 } from "@chakra-ui/react";
 import { getAllCategories } from "../../services/categoryService";
 import { editProduct } from "../../services/productService";
+import { useFormik } from 'formik';
+import { productEditSchema } from '../../schemas/ProductEditSchema'
 
 export default function ProductEditModal({id, isOpen, onClose, getProducts }) {
-    const [input, setInput] = useState({});
     const [categories, setCategories] = useState([]);
-  const [product, setProduct] = useState(null);
+    const [product, setProduct] = useState(null);
     const toast = useToast();
   
     useEffect(() => {
@@ -30,21 +31,36 @@ export default function ProductEditModal({id, isOpen, onClose, getProducts }) {
         .catch((e) => console.log(e));
     });
   
-    const handleSaveBtnClick = async () => {
-          if(!(input.name && input.categoryId)) return
-          setProduct(input.name)
-          editProduct(id, input).then(res=>{
-              if(res.status != 200) throw new Error
-              toast({
-                  title: "Product edited.",
-                  status: "success",
-                  duration: 3000,
-                  isClosable: true,
-                })
-                getProducts()
-                onClose();
-          }).catch(e=>console.log(e))
-    }
+    const formik = useFormik({
+      initialValues: {
+        name: '',
+        categoryId: null
+      },
+      onSubmit: (values, actions) => {
+        try{
+          if(!(values.name && values.categoryId)) return
+          setProduct(values)
+          editProduct(id, values)
+
+          toast({
+            title: "Product edited.",
+            status: "success",
+            duration: 3000,
+            isClosable: true,
+          })
+          getProducts()
+          actions.resetForm()
+  
+          setTimeout(() => {
+            onClose();
+          }, 1000)
+        }
+        catch(error){
+          console.log(error)
+        }
+      },
+      validationSchema: productEditSchema,
+    })
 
   return (
     <>
@@ -57,19 +73,19 @@ export default function ProductEditModal({id, isOpen, onClose, getProducts }) {
             <FormControl>
               <FormLabel>Product name</FormLabel>
               <Input
-                onChange={(e) =>
-                  setInput({ ...input, name: e.target.value.trim() })
-                }
+                onChange={formik.handleChange}
                 defaultValue={product}
+                name="name"
                 placeholder="Enter name"
-              />
+                className={formik.errors.name && formik.touched.name ? `${styles.input_error}` : ``}
+                />
+                {formik.errors.name && formik.touched.name && <p className={styles.error_msg}>{formik.errors.name}</p>}
             </FormControl>
             <FormControl marginTop={"15px"}>
               <FormLabel>Category</FormLabel>
               <Select
-                onChange={(e) =>
-                  setInput({ ...input, categoryId: e.target.value })
-                }
+                onChange={formik.handleChange}
+                name="categoryId"
               >
                 <option disabled selected>
                   Select category
@@ -81,13 +97,15 @@ export default function ProductEditModal({id, isOpen, onClose, getProducts }) {
                     </option>
                   );
                 })}
+              className={formik.errors.categoryId && formik.touched.categoryId ? `${styles.input_error}` : ``}
               </Select>
+              {formik.errors.categoryId && formik.touched.categoryId && <p className={styles.error_msg}>{formik.errors.categoryId}</p>}
             </FormControl>
           </ModalBody>
 
           <ModalFooter>
             <Button
-              onClick={handleSaveBtnClick}
+              onClick={formik.handleSubmit}
               colorScheme="blue"
               mr={3}
             >

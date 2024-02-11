@@ -15,21 +15,20 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { postCategory } from "../../services/categoryService";
+import { useFormik } from "formik";
+import { categoryAddSchema } from '../../schemas/CategoryAddSchema'
 
 export default function CategoryAddModal({ isOpen, onClose, getCategories }) {
-  const [input, setInput] = useState("");
   const toast = useToast();
 
-  const handleSaveBtnClick = async () => {
-    if (input.length < 3) return;
-    const body = {
-      name: input,
-    };
-
-    try {
-      let resp = await postCategory(body)
-     
-      if (resp.status == 200) {
+  const formik = useFormik({
+    initialValues: {
+      name: '',
+    },
+    onSubmit: (values, actions) => {
+      try {
+        postCategory(values)
+       
         toast({
           title: "Category created.",
           status: "success",
@@ -37,12 +36,19 @@ export default function CategoryAddModal({ isOpen, onClose, getCategories }) {
           isClosable: true,
         });
         getCategories();
-        onClose();
+        actions.resetForm();
+
+        setTimeout(() => {
+          onClose();
+        }, 1000)
+
+      } catch (error) {
+        console.log(error);
       }
-    } catch (error) {
-      console.log(error);
-    }
-  };
+    },
+    validationSchema: categoryAddSchema,
+  })
+
 
   return (
     <>
@@ -55,14 +61,19 @@ export default function CategoryAddModal({ isOpen, onClose, getCategories }) {
             <FormControl>
               <FormLabel>Category name</FormLabel>
               <Input
-                onChange={(e) => setInput(e.target.value.trim())}
+                name="name"
+                onChange={formik.handleChange}
                 placeholder="Enter name"
+                value={formik.values.name}
+                onBlur={formik.handleBlur}
+                className={formik.errors.name && formik.touched.name ? `${styles.input_error}` : ``}
               />
+              {formik.errors.name && formik.touched.name && <p className={styles.error_msg}>{formik.errors.name}</p>}
             </FormControl>
           </ModalBody>
 
           <ModalFooter>
-            <Button onClick={handleSaveBtnClick} colorScheme="blue" mr={3}>
+            <Button onClick={formik.handleSubmit} colorScheme="blue" mr={3}>
               Save
             </Button>
             <Button onClick={onClose}>Cancel</Button>
